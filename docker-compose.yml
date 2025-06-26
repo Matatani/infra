@@ -1,0 +1,45 @@
+services:
+  backend:
+    build:
+      context: ../matatani-backend
+      dockerfile: Dockerfile
+    container_name: matatani-backend
+    ports:
+      - "${BE_PORT}:${BE_PORT}"
+    environment:
+      - BE_HOST=${BE_HOST}
+      - BE_PORT=${BE_PORT}
+      - ML_HOST=ml-service:${ML_PORT}
+    depends_on:
+      - ml-service
+    networks:
+      - app-network
+
+  ml-service:
+    build:
+      context: ../matatani-ml
+      dockerfile: Dockerfile
+    container_name: matatani-ml
+    ports:
+      - "${ML_PORT}:${ML_PORT}"
+    networks:
+      - app-network
+
+  frontend:
+    build:
+      context: ../matatani-frontend
+      dockerfile: Dockerfile
+    container_name: matatani-frontend
+    ports:
+      - "${FE_PORT}:${FE_PORT}"
+    environment:
+      - NEXT_PUBLIC_API_URL=${NEXT_PUBLIC_API_URL}
+    depends_on:
+      - backend
+    networks:
+      - app-network
+
+networks:
+  app-network:
+    driver: bridge
+

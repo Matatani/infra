@@ -1,0 +1,23 @@
+version: "3"
+
+tasks:
+  build:
+    desc: "Build all Docker images"
+    cmds:
+      - docker compose build
+
+  up:
+    desc: "Start all services in detached mode"
+    cmds:
+      - docker compose up -d
+
+  down:
+    desc: "Stop and remove all services"
+    cmds:
+      - docker compose down
+
+  restart:
+    desc: "Restart all services"
+    cmds:
+      - task: down
+      - task: up
