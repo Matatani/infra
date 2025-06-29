@@ -10,6 +10,11 @@ tasks:
     desc: "Start all services in detached mode"
     cmds:
       - docker compose up -d
+      
+  run:
+    desc: "Start all services in detached mode + build"
+    cmds:
+      - docker compose up --build -d
 
   down:
     desc: "Stop and remove all services"
