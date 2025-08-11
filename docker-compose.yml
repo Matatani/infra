@@ -3,6 +3,7 @@ services:
     build:
       context: ../matatani-backend
       dockerfile: Dockerfile
+    image: matatani-backend:1.0
     container_name: matatani-backend
     ports:
       - "${BE_PORT}:${BE_PORT}"
@@ -25,6 +26,7 @@ services:
     build:
       context: ../matatani-ml
       dockerfile: Dockerfile
+    image: matatani-ml:1.0
     container_name: matatani-ml
     ports:
       - "${ML_PORT}:${ML_PORT}"
@@ -40,8 +42,8 @@ services:
     image: minio/minio:latest
     container_name: matatani-minio
     ports:
-      - "9000:9000"
-      - "9001:9001"
+      - "9100:9000"
+      - "9101:9001"
     volumes:
       - minio-data:/data
     environment:
@@ -57,6 +59,7 @@ services:
       dockerfile: Dockerfile
       args:
         - NEXT_PUBLIC_API_URL=${NEXT_PUBLIC_API_URL}
+    image: matatani-frontend:1.0
     container_name: matatani-frontend
     ports:
       - "${FE_PORT}:${FE_PORT}"
