@@ -6,16 +6,13 @@ services:
     image: matatani-backend:1.0
     container_name: matatani-backend
     ports:
-      - "${BE_PORT}:${BE_PORT}"
+      - "8080:8080"
     environment:
-      - BE_HOST=${BE_HOST}
-      - BE_PORT=${BE_PORT}
+      - SERVER_ADDRESS=${SERVER_ADDRESS}
+      - UPLOAD_ADDRESS=${BACKEND_GRPC_URL}
       - ML_HOST=ml-service:${ML_PORT}
-      - S3_ENDPOINT=http://minio:9000
-      - S3_BUCKET=matatani-bucket
-      - AWS_ACCESS_KEY_ID=${MINIO_USER}
-      - AWS_SECRET_ACCESS_KEY=${MINIO_PASSWORD}
-      - AWS_REGION=us-east-1
+      - PUBLIC_API_URL=${NEXT_PUBLIC_API_URL}
+      - INTERNAL_API_URL=${INTERNAL_BACKEND_URL}
     depends_on:
       - ml-service
       - minio
@@ -37,6 +34,29 @@ services:
       - AWS_REGION=us-east-1
     networks:
       - app-network
+
+  tusd:
+    image: tusproject/tusd:latest
+    command: 
+        -s3-endpoint=http://minio:9000
+        -s3-bucket=${S3_BUCKET}
+        -s3-object-prefix=uploads/
+        -hooks-grpc=${BACKEND_GRPC_URL}
+        -host=0.0.0.0
+        -port=1080
+    environment:
+      - S3_ENDPOINT=http://minio:9000
+      - AWS_ACCESS_KEY_ID=${MINIO_USER}
+      - AWS_SECRET_ACCESS_KEY=${MINIO_PASSWORD}
+      - AWS_REGION=us-east-1
+    ports:
+      - "1080:1080"
+    networks:
+      - app-network
+    depends_on:
+      - backend
+      - minio
+    
 
   minio:
     image: minio/minio:latest
