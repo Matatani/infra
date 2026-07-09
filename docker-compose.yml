@@ -1,3 +1,6 @@
+include:
+  - docker-compose-monitor.yml
+
 services:
   backend:
     build:
@@ -7,48 +10,25 @@ services:
     container_name: matatani-backend
     ports:
       - "8080:8080"
-    environment:
-      - SERVER_ADDRESS=${SERVER_ADDRESS}
-      - UPLOAD_ADDRESS=${BACKEND_GRPC_URL}
-      - ML_HOST=ml-service:${ML_PORT}
-      - PUBLIC_API_URL=${NEXT_PUBLIC_API_URL}
-      - INTERNAL_API_URL=${INTERNAL_BACKEND_URL}
     depends_on:
-      - ml-service
       - minio
     networks:
       - app-network
-
-  ml-service:
-    build:
-      context: ../matatani-ml
-      dockerfile: Dockerfile
-    image: matatani-ml:1.0
-    container_name: matatani-ml
-    ports:
-      - "${ML_PORT}:${ML_PORT}"
-    environment:
-      - S3_ENDPOINT=http://minio:9000
-      - AWS_ACCESS_KEY_ID=${MINIO_USER}
-      - AWS_SECRET_ACCESS_KEY=${MINIO_PASSWORD}
-      - AWS_REGION=us-east-1
-    networks:
-      - app-network
+    env_file:
+      - path: ./.env
+        required: true
 
   tusd:
     image: tusproject/tusd:latest
-    command: 
-        -s3-endpoint=http://minio:9000
-        -s3-bucket=${S3_BUCKET}
-        -s3-object-prefix=uploads/
-        -hooks-grpc=${BACKEND_GRPC_URL}
-        -host=0.0.0.0
-        -port=1080
-    environment:
-      - S3_ENDPOINT=http://minio:9000
-      - AWS_ACCESS_KEY_ID=${MINIO_USER}
-      - AWS_SECRET_ACCESS_KEY=${MINIO_PASSWORD}
-      - AWS_REGION=us-east-1
+    command: -s3-endpoint=http://minio:9000
+      -s3-bucket=${S3_BUCKET}
+      -s3-object-prefix=uploads/
+      -hooks-grpc=${BACKEND_GRPC_URL}
+      -host=0.0.0.0
+      -port=1080
+    env_file:
+      - path: ./.env
+        required: true
     ports:
       - "1080:1080"
     networks:
@@ -56,7 +36,6 @@ services:
     depends_on:
       - backend
       - minio
-    
 
   minio:
     image: minio/minio:latest
@@ -66,13 +45,13 @@ services:
       - "9101:9001"
     volumes:
       - minio-data:/data
-    environment:
-      - MINIO_ROOT_USER=${MINIO_USER}         
-      - MINIO_ROOT_PASSWORD=${MINIO_PASSWORD}
+    env_file:
+      - path: ./.env
+        required: true
     command: server /data --console-address ":9001"
     networks:
       - app-network
-    
+
   frontend:
     build:
       context: ../matatani-frontend
@@ -83,13 +62,13 @@ services:
     container_name: matatani-frontend
     ports:
       - "${FE_PORT}:${FE_PORT}"
-    environment:
-      - NEXT_PUBLIC_API_URL=${NEXT_PUBLIC_API_URL}
+    env_file:
+      - path: ./.env
+        required: true
     depends_on:
       - backend
     networks:
       - app-network
-
 
 networks:
   app-network:
